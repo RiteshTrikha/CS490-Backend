@@ -89,6 +89,9 @@ def top_actors(store_id=None):
     return jsonify(actors)
 
 
+@app.route('/api/top-actors')
+def top_actors_all_stores():
+    return top_actors()
 
 
 
