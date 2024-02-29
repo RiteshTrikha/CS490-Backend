@@ -69,7 +69,6 @@ def top_actors():
     return jsonify(actors)
 
 
-
 @app.route('/api/actor/<int:actor_id>/top-films')
 def actor_top_films(actor_id):
     conn = get_db_connection()
@@ -90,6 +89,7 @@ def actor_top_films(actor_id):
     films = cursor.fetchall()
     conn.close()
     return jsonify(films)
+
 
 @app.route('/films')
 def films():
@@ -118,6 +118,7 @@ def search_films():
     conn.close()
     return jsonify(films)
 
+
 @app.route('/api/film/<int:film_id>', methods=['GET'])
 def film_details(film_id):
     conn = get_db_connection()
@@ -131,12 +132,14 @@ def film_details(film_id):
     conn.close()
     return jsonify(film)
 
+
 @app.route('/customers')
 def customers():
     return render_template('customers.html')
 
 
 from flask import request, jsonify
+
 
 @app.route('/api/customers', methods=['GET'])
 def list_customers():
@@ -184,7 +187,6 @@ def list_customers():
     conn.close()
 
     return jsonify({'customers': customers, 'totalPages': total_pages})
-
 
 
 if __name__ == '__main__':
