@@ -16,23 +16,39 @@ def get_db_connection():
 @app.route('/')
 def index():
     return render_template('index.html')
-
-
 @app.route('/api/top-movies')
-def top_movies():
+def top_movies_all_stores():
+    return top_movies()
+
+
+@app.route('/api/store/<int:store_id>/top-movies')
+def top_movies(store_id=None):
     conn = get_db_connection()
     cursor = conn.cursor(dictionary=True)
-    cursor.execute("""
-        select ft.film_id, ft.title, count(rental_id) as rented
-        from rental r
-        join inventory i
-        on r.inventory_id = i.inventory_id
-        join film_text ft
-        on i.film_id = ft.film_id
-        group by ft.film_id, ft.title
-        order by rented desc
-        limit 5;
-    """)
+
+    if store_id:
+        cursor.execute("""
+            SELECT ft.film_id, ft.title, COUNT(r.rental_id) AS rented
+            FROM rental r
+            JOIN inventory i ON r.inventory_id = i.inventory_id
+            JOIN film_text ft ON i.film_id = ft.film_id
+            JOIN store s ON i.store_id = s.store_id
+            WHERE s.store_id = %s
+            GROUP BY ft.film_id, ft.title
+            ORDER BY rented DESC
+            LIMIT 5;
+        """, (store_id,))
+    else:
+        cursor.execute("""
+            SELECT ft.film_id, ft.title, COUNT(r.rental_id) AS rented
+            FROM rental r
+            JOIN inventory i ON r.inventory_id = i.inventory_id
+            JOIN film_text ft ON i.film_id = ft.film_id
+            GROUP BY ft.film_id, ft.title
+            ORDER BY rented DESC
+            LIMIT 5;
+        """)
+
     movies = cursor.fetchall()
     conn.close()
     return jsonify(movies)
