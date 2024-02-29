@@ -68,21 +68,27 @@ def movie_details(movie_id):
     return jsonify(movie)
 
 
-@app.route('/api/top-actors')
-def top_actors():
+@app.route('/api/store/<int:store_id>/top-actors')
+def top_actors(store_id=None):
     conn = get_db_connection()
     cursor = conn.cursor(dictionary=True)
     cursor.execute("""
-        SELECT a.actor_id, a.first_name, a.last_name, COUNT(fa.film_id) AS film_count
+        SELECT a.actor_id, a.first_name, a.last_name, COUNT(DISTINCT r.rental_id) AS film_count
         FROM actor a
         JOIN film_actor fa ON a.actor_id = fa.actor_id
-        GROUP BY a.actor_id
+        JOIN film f ON fa.film_id = f.film_id
+        JOIN inventory i ON f.film_id = i.film_id
+        LEFT JOIN rental r ON i.inventory_id = r.inventory_id
+        WHERE i.store_id = %s OR %s IS NULL
+        GROUP BY a.actor_id, a.first_name, a.last_name
         ORDER BY film_count DESC
         LIMIT 5
-    """)
+    """, (store_id, store_id))
     actors = cursor.fetchall()
     conn.close()
     return jsonify(actors)
+
+
 
 
 
