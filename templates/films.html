@@ -1,0 +1,17 @@
+{% extends "base.html" %}
+
+{% block content %}
+<div class="card mt-5">
+    <div class="card-body">
+        <h2>Search Films</h2>
+        <input type="text" id="searchQuery" placeholder="Search by film name, actor, or genre"
+               class="form-control mb-3">
+        <button onclick="searchFilms()" class="btn btn-secondary">Search</button>
+        <div id="filmsList"></div>
+    </div>
+</div>
+{% endblock %}
+
+{% block scripts %}
+<script src="{{ url_for('static', filename='js/films.js') }}"></script>
+{% endblock %}

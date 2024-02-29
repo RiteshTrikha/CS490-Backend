@@ -1,0 +1,46 @@
+{% extends "base.html" %}
+
+{% block content %}
+<!-- Specific content for the index page goes here -->
+<br/>
+<div class="row">
+    <div class="col-lg-6">
+        <div class="card">
+            <div class="card-body">
+                <h1>Top 5 Rented Films</h1>
+                <div id="topMovies" class="row"></div>
+            </div>
+
+            <!-- Container for displaying movie details -->
+            <div id="movieDetails" class="card">
+                <div class="card-body">
+                    <h2>Movie Details</h2>
+                    <!-- Movie details will be displayed here by JavaScript -->
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <div class="col-lg-6 mt-lg-0 mt-4">
+        <div class="card">
+            <div class="card-body">
+                <!-- Adding Container for Top Actors -->
+                <h1>Top Actors</h1>
+                <div id="topActors" class="row"></div> <!-- This is where the top actors will be displayed -->
+            </div>
+
+            <!-- Container for displaying actor details -->
+            <div id="actorDetails" class="card">
+                <div class="card-body">
+                    <h2>Actor Details</h2>
+                    <!-- Actor details will be displayed here by JavaScript -->
+                </div>
+            </div>
+        </div>
+    </div>
+</div>
+{% endblock %}
+
+{% block scripts %}
+<script src="{{ url_for('static', filename='js/landing.js') }}"></script>
+{% endblock %}
