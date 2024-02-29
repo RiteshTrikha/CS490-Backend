@@ -69,6 +69,7 @@ def top_actors():
     return jsonify(actors)
 
 
+
 @app.route('/api/actor/<int:actor_id>/top-films')
 def actor_top_films(actor_id):
     conn = get_db_connection()
@@ -90,19 +91,25 @@ def actor_top_films(actor_id):
     conn.close()
     return jsonify(films)
 
-
 @app.route('/films')
 def films():
     return render_template('films.html')
 
 
+# API endpoint for searching films
 @app.route('/api/search-films', methods=['GET'])
 def search_films():
     query = request.args.get('query')
+    limit = request.args.get('limit', default=10, type=int)
+    offset = request.args.get('offset', default=0, type=int)
     conn = get_db_connection()
     cursor = conn.cursor(dictionary=True)
     cursor.execute("""
-        SELECT DISTINCT film.film_id, film.title, film.description
+        SELECT DISTINCT 
+            film.film_id, 
+            film.title, 
+            GROUP_CONCAT(DISTINCT actor.first_name, ' ', actor.last_name SEPARATOR ', ') AS actors,
+            GROUP_CONCAT(DISTINCT category.name SEPARATOR ', ') AS genre
         FROM film
         LEFT JOIN film_actor ON film.film_id = film_actor.film_id
         LEFT JOIN actor ON film_actor.actor_id = actor.actor_id
@@ -112,11 +119,31 @@ def search_films():
         OR actor.first_name LIKE %s
         OR actor.last_name LIKE %s
         OR category.name LIKE %s
-        LIMIT 10
-    """, ('%' + query + '%', '%' + query + '%', '%' + query + '%', '%' + query + '%'))
+        OR film.film_id LIKE %s
+        GROUP BY film.film_id
+        LIMIT %s OFFSET %s
+    """, ('%' + query + '%', '%' + query + '%', '%' + query + '%', '%' + query + '%', '%' + query + '%', limit, offset))
     films = cursor.fetchall()
+
+    # Fetch total count of films matching the search criteria
+    cursor.execute("""
+        SELECT COUNT(DISTINCT film.film_id) AS total_count
+        FROM film
+        LEFT JOIN film_actor ON film.film_id = film_actor.film_id
+        LEFT JOIN actor ON film_actor.actor_id = actor.actor_id
+        LEFT JOIN film_category ON film.film_id = film_category.film_id
+        LEFT JOIN category ON film_category.category_id = category.category_id
+        WHERE film.title LIKE %s 
+        OR actor.first_name LIKE %s
+        OR actor.last_name LIKE %s
+        OR category.name LIKE %s
+        OR film.film_id LIKE %s
+    """, ('%' + query + '%', '%' + query + '%', '%' + query + '%', '%' + query + '%', '%' + query + '%'))
+    total_count = cursor.fetchone()['total_count']
+
     conn.close()
-    return jsonify(films)
+    return jsonify({'films': films, 'total_count': total_count})
+
 
 
 @app.route('/api/film/<int:film_id>', methods=['GET'])
@@ -139,7 +166,6 @@ def customers():
 
 
 from flask import request, jsonify
-
 
 @app.route('/api/customers', methods=['GET'])
 def list_customers():
@@ -187,6 +213,7 @@ def list_customers():
     conn.close()
 
     return jsonify({'customers': customers, 'totalPages': total_pages})
+
 
 
 if __name__ == '__main__':
